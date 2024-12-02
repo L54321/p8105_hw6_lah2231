@@ -2,7 +2,7 @@
 title: "p8105_hw6_lah2231"
 author: "Laura Henze"
 date: "2024-12-02"
-output: html_document
+output: github_document
 ---
 
 ```{r}
