@@ -6,6 +6,7 @@ output: github_document
 ---
 
 ```{r}
-#123
+homicide_data <- read.csv("data/homicide-data.csv")
+#View(homicide_data)
 ```
 
