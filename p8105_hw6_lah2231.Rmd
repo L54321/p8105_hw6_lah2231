@@ -5,8 +5,84 @@ date: "2024-12-02"
 output: github_document
 ---
 
+# Problem 2
+
+```{r}
+library(tidyverse)
+```
+
 ```{r}
 homicide_data <- read.csv("data/homicide-data.csv")
 #View(homicide_data)
 ```
+
+```{r}
+head(homicide_data)
+```
+
+## Preparing Data
+```{r}
+prepared_homicide_data <- 
+  homicide_data |>
+  mutate(
+    city_state = paste(city, state, sep = ", "),
+    resolved = as.numeric(disposition == "Closed by arrest"),
+    victim_age = as.numeric(victim_age)
+  ) |>
+  filter(
+    !city_state %in% c("Dallas, TX", "Phoenix, AZ", "Kansas City, MO", "Tulsa, AL"),
+    victim_race %in% c("White", "Black"),
+    !is.na(victim_age)
+  )
+#View(prepared_homicide_data)
+```
+
+I created city_state and resolved, converted victim_age to numeric, omitted specific cities, and limited to White/Black races. I excluded the lines without known ages.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
