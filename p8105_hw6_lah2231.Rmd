@@ -6,7 +6,6 @@ output: github_document
 ---
 
 # Problem 2
-
 ```{r}
 library(tidyverse)
 ```
@@ -40,7 +39,6 @@ prepared_homicide_data <-
 I created city_state and resolved, converted victim_age to numeric, omitted specific cities, and limited to White/Black races. I excluded the lines without known ages.
 
 ## Logistic Regression for Baltimore
-
 ```{r}
 baltimore_data <- 
   prepared_homicide_data |> 
@@ -72,7 +70,6 @@ baltimore_sex_or
 For the Baltimore regression analysis I filtered for Baltimore, fit the logistic regression using glm with resolved as the outcome and I extracted odds ratio and confidence interval to cpmare male and female victims. The results indicate that male victims are less likely to have their homicides resolved compared to female victims with an odds ratio of 0.4255 (95% CI: 0.3246–0.5579).
 
 ## Logistic Regression for each city 
-
 ```{r}
 city_model_results <- 
   prepared_homicide_data |> 
@@ -96,7 +93,6 @@ city_model_results
 I made the logistic regression for each city by grouping data by city, fitting the logistic regression for each city and extracting odds ratio and confidence interval for victim_sexMale.
 
 ## Plotting Odds Ratio and Confidence Interval for each city comparing male and female victims
-
 ```{r}
 city_model_results |> 
   ggplot(aes(x = reorder(city_state, OR), y = OR)) +
@@ -114,9 +110,31 @@ I plotted the adjusted odds ratio and confidence intervals for resolved homicide
 The result and the plot indicate that male victims are less likely to be resolved because most cities show odds ratios < 1. Albuquerque with the highest rate of resolved crimes for men with odds ratio 1.77 (CI: 0.83–3.76) has a wide uncertainty,  making this result much less reliable.
 
 # Problem 3
+```{r}
+birthweight_data <- read.csv("data/birthweight.csv")
+#View(birthweight_data)
+```
 
+## Converting numeric variables to labels where appropriate
+```{r}
+birthweight_data <- birthweight_data |>
+  mutate(
+    babysex = factor(babysex, levels = c(1, 2), labels = c("Male", "Female")),
+    frace = factor(frace, levels = c(1, 2, 3, 4, 8, 9), labels = c("White", "Black", "Asian", "Puerto Rican", "Other", "Unknown")),
+    mrace = factor(mrace, levels = c(1, 2, 3, 4, 8), labels = c("White", "Black", "Asian", "Puerto Rican", "Other")),
+    malform = factor(malform, levels = c(0, 1), labels = c("Absent", "Present"))
+  )
+```
 
-
+## Checking for missing values
+```{r}
+missing_values <- colSums(is.na(birthweight_data))
+missing_values
+```
+## Summarizing dataset
+```{r}
+summary(birthweight_data)
+```
 
 
 
