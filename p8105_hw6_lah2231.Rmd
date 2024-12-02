@@ -35,7 +35,6 @@ prepared_homicide_data <-
   )
 #View(prepared_homicide_data)
 ```
-
 I created city_state and resolved, converted victim_age to numeric, omitted specific cities, and limited to White/Black races. I excluded the lines without known ages.
 
 ## Logistic Regression for Baltimore
@@ -66,7 +65,6 @@ baltimore_sex_or <-
 
 baltimore_sex_or
 ```
-
 For the Baltimore regression analysis I filtered for Baltimore, fit the logistic regression using glm with resolved as the outcome and I extracted odds ratio and confidence interval to cpmare male and female victims. The results indicate that male victims are less likely to have their homicides resolved compared to female victims with an odds ratio of 0.4255 (95% CI: 0.3246–0.5579).
 
 ## Logistic Regression for each city 
@@ -105,7 +103,6 @@ city_model_results |>
     y = "Odds ratio male vs. female)"
   )
 ```
-
 I plotted the adjusted odds ratio and confidence intervals for resolved homicides in each city, comparing male and female victims. The likelihood to resolve cases with male victims varies across cities, in cities that have an OR of less than 1 male victims are less likely to have their homicides resolved in comparison to female victims. The error bars in the plot represent the uncertainty, the wider the more uncertainty.
 The result and the plot indicate that male victims are less likely to be resolved because most cities show odds ratios < 1. Albuquerque with the highest rate of resolved crimes for men with odds ratio 1.77 (CI: 0.83–3.76) has a wide uncertainty,  making this result much less reliable.
 
@@ -131,17 +128,22 @@ birthweight_data <- birthweight_data |>
 missing_values <- colSums(is.na(birthweight_data))
 missing_values
 ```
+There are no missing values.
+
 ## Summarizing dataset
 ```{r}
 summary(birthweight_data)
 ```
 
-## Proposed model with maternal height, maternal weight gain, gestational age, and presence of malformations
+## My proposed model with maternal height, maternal weight gain, gestational age, and presence of malformations
 ```{r}
 proposed_model <- lm(bwt ~ mheight + wtgain + gaweeks + malform, data = birthweight_data)
 summary(proposed_model)
 ```
+I picked maternal height, maternal weight gain, gestational age, and presence of malformations for my linear regression model with lm.
+This model shows that maternal height, maternal weight gain, and gestational age are correlated with birthweight. The three stars indicate very strong statistical significance for the corresponding predictors of p < 0.001. Malformations had no meaningful effect with p of 0.932. The adjusted R² of 0.2301 means that this model explains around 23% of the variability in birthweight with a residual standard error or typical prediction error of 449.4 grams.
 
+## Adding residuals and predictions
 ```{r}
 library(modelr)
 
@@ -152,24 +154,26 @@ diagnostic_data <- birthweight_data |>
 ggplot(diagnostic_data, aes(x = pred, y = resid)) +
   geom_point() +
   labs(
-    title = "Residuals vs. Fitted Values",
-    x = "Fitted Values",
-    y = "Residuals"
+    title = "residuals vs. fitted values",
+    x = "fitted values",
+    y = "residuals"
   )
 ```
-I used modelr::add_predictions and modelr::add_residuals to prepare data for plotting residuals against fitted values.
+I used modelr::add_predictions and modelr::add_residuals to prepare data for plotting residuals against fitted values. The plot now shows residuals, the errors between observed and predicted values, plotted against fitted values, the predicted birthweights. The points are mostly concentrated in one place in the center, with no clear pattern, which suggests no obvious non-linearity or heteroscedasticity. Nevertheless the relatively wide spread of residuals indicates that the models fit explains the variability in birthweight only up to a certain point, consistent with the adjusted R² of 0.23.
 
 ## Model 1 Length and gestational age
 ```{r}
 model1 <- lm(bwt ~ blength + gaweeks, data = birthweight_data)
 summary(model1)
 ```
+Suggested Model 1 predicts birthweight using birth length and gestational age, explaining 57.67% of the variability because of the adjusted R² = 0.5767. Both predictors are significant with p < 0.001. Residual standard error is 333.2 g.
 
 ## Model 2: Head circumference, length, sex, and interactions
 ```{r}
 model2 <- lm(bwt ~ bhead * blength * babysex, data = birthweight_data)
 summary(model2)
 ```
+This model explains 68.4% of the variability in birth weight with significant interactions between head circumference, birth length, and baby sex.
 
 ## Comparing Models using Cross Validation
 ```{r}
@@ -207,8 +211,20 @@ ggplot(cv_summary, aes(x = model, y = rmse)) +
     y = "RMSE"
   )
 ```
-I used crossv_mc to create train/test splits, fit models and calculate cross-validated RMSEs.
+I used crossv_mc to create train/test splits, fit models and calculate cross-validated RMSEs. I performed cross-validation to compare the predictive performance in terms of RMSE of the three models for birth weight and visualized their RMSE distributions using boxplots. 
+Model 2 has the lowest RMSE, with a median around 290, indicating the best predictive performance. Model 1 performs a little bit worse with a median RMSE around 330. The proposed model is the worst of them with the highest RMSE around 450.
 
+
+```{r}
+cv_summary |>
+  group_by(model) |>
+  summarize(
+    mean_rmse = mean(rmse),
+    median_rmse = median(rmse),
+    min_rmse = min(rmse),
+    max_rmse = max(rmse)
+  )
+```
 
 
 
