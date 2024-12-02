@@ -136,11 +136,78 @@ missing_values
 summary(birthweight_data)
 ```
 
+## Proposed model with maternal height, maternal weight gain, gestational age, and presence of malformations
+```{r}
+proposed_model <- lm(bwt ~ mheight + wtgain + gaweeks + malform, data = birthweight_data)
+summary(proposed_model)
+```
 
+```{r}
+library(modelr)
 
+diagnostic_data <- birthweight_data |>
+  add_predictions(proposed_model) |>
+  add_residuals(proposed_model)
 
+ggplot(diagnostic_data, aes(x = pred, y = resid)) +
+  geom_point() +
+  labs(
+    title = "Residuals vs. Fitted Values",
+    x = "Fitted Values",
+    y = "Residuals"
+  )
+```
+I used modelr::add_predictions and modelr::add_residuals to prepare data for plotting residuals against fitted values.
 
+## Model 1 Length and gestational age
+```{r}
+model1 <- lm(bwt ~ blength + gaweeks, data = birthweight_data)
+summary(model1)
+```
 
+## Model 2: Head circumference, length, sex, and interactions
+```{r}
+model2 <- lm(bwt ~ bhead * blength * babysex, data = birthweight_data)
+summary(model2)
+```
+
+## Comparing Models using Cross Validation
+```{r}
+library(purrr)
+
+cv_splits <- crossv_mc(birthweight_data, 100)
+
+cv_results <- cv_splits |>
+  mutate(
+    train_data = map(train, as_tibble),
+    test_data = map(test, as_tibble),
+    rmse_proposed = map2_dbl(train_data, test_data, ~ {
+      model <- lm(bwt ~ mheight + wtgain + gaweeks + malform, data = .x)
+      rmse(model, .y)
+    }),
+    rmse_model1 = map2_dbl(train_data, test_data, ~ {
+      model <- lm(bwt ~ blength + gaweeks, data = .x)
+      rmse(model, .y)
+    }),
+    rmse_model2 = map2_dbl(train_data, test_data, ~ {
+      model <- lm(bwt ~ bhead * blength * babysex, data = .x)
+      rmse(model, .y)
+    })
+  )
+
+cv_summary <- cv_results |>
+  select(starts_with("rmse")) |>
+  pivot_longer(everything(), names_to = "model", values_to = "rmse")
+
+ggplot(cv_summary, aes(x = model, y = rmse)) +
+  geom_boxplot() +
+  labs(
+    title = "cross-validated RMSE Comparison",
+    x = "Model",
+    y = "RMSE"
+  )
+```
+I used crossv_mc to create train/test splits, fit models and calculate cross-validated RMSEs.
 
 
 
